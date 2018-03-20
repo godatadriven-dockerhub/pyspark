@@ -1,7 +1,7 @@
 FROM openjdk:8-jre-slim
 
 ARG BUILD_DATE
-ARG SPARK_VERSION=2.2.1
+ARG SPARK_VERSION=2.3.0
 
 LABEL org.label-schema.name="Apache PySpark $SPARK_VERSION" \
       org.label-schema.build-date=$BUILD_DATE \
@@ -15,6 +15,7 @@ RUN apt-get update && \
     bash /tmp/miniconda.sh -b -f -p "/opt/miniconda3" && \
     rm /tmp/miniconda.sh && \
     apt-get remove -y curl bzip2 && \
+    apt-get autoremove -y && \
     apt-get clean && \
     pip install --no-cache pyspark==${SPARK_VERSION}
 
