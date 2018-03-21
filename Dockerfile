@@ -17,6 +17,11 @@ RUN apt-get update && \
     apt-get remove -y curl bzip2 && \
     apt-get autoremove -y && \
     apt-get clean && \
+    conda config --set auto_update_conda true && \
+    conda config --set channel_priority false && \
+    conda update conda -y --force && \
+    conda clean -tipsy && \
+    echo "PATH=/opt/miniconda${MINICONDA_VERSION}/bin:\${PATH}" > /etc/profile.d/miniconda.sh && \
     pip install --no-cache pyspark==${SPARK_VERSION}
 
 ENTRYPOINT ["pyspark"]
