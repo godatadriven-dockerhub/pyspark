@@ -23,7 +23,7 @@ RUN apt-get update && \
     conda clean -tipsy && \
     echo "PATH=/opt/miniconda3/bin:\${PATH}" > /etc/profile.d/miniconda.sh && \
     pip install --no-cache pyspark==${SPARK_VERSION} && \
-    echo "SPARK_HOME=$(python /opt/miniconda3/bin/find_spark_home.py)" > /etc/profile.d/spark.sh
+    echo "export SPARK_HOME=$(python /opt/miniconda3/bin/find_spark_home.py)" > /etc/profile.d/spark.sh
 
 ENTRYPOINT ["pyspark"]
 CMD ["--help"]
