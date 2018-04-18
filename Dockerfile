@@ -8,6 +8,7 @@ LABEL org.label-schema.name="Apache PySpark $SPARK_VERSION" \
       org.label-schema.version=$SPARK_VERSION
 
 ENV PATH="/opt/miniconda3/bin:${PATH}"
+ENV PYSPARK_PYTHON="/opt/miniconda3/bin/python"
 
 RUN apt-get update && \
     apt-get install -y curl bzip2 --no-install-recommends && \
