@@ -31,5 +31,5 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     apt-get clean
 
-ENTRYPOINT ["pyspark"]
+ENTRYPOINT ["spark-submit"]
 CMD ["--help"]
