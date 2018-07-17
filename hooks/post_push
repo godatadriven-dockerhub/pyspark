@@ -5,7 +5,7 @@ IMAGE_REPO=${IMAGE_NAME%:*}
 IMAGE_TAG=${IMAGE_NAME#*:}
 
 # Retag to latest
-if [ "$IMAGE_TAG" = "2.3.0" ]; then
+if [ "$IMAGE_TAG" = "2.3.1" ]; then
     docker tag $IMAGE_NAME ${IMAGE_REPO}:latest
     docker push ${IMAGE_REPO}:latest
 fi
