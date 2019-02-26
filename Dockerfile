@@ -1,7 +1,7 @@
 FROM openjdk:8-jre-slim
 
 ARG BUILD_DATE
-ARG SPARK_VERSION=2.3.2
+ARG SPARK_VERSION=2.4.0
 
 LABEL org.label-schema.name="Apache PySpark $SPARK_VERSION" \
       org.label-schema.build-date=$BUILD_DATE \
