@@ -7,4 +7,4 @@ IMAGE_TAG=${IMAGE_NAME#*:}
 # Trigger build
 docker build --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
              --build-arg SPARK_VERSION=$IMAGE_TAG \
-             -t $IMAGE_NAME .
+             -t $DOCKER_REPO:${DOCKER_TAG//,/ -t $DOCKER_REPO:} .
