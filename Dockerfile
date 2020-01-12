@@ -2,6 +2,7 @@ FROM openjdk:8-jre-slim
 
 ARG BUILD_DATE
 ARG SPARK_VERSION=2.4.0
+ARG NUMPY_VERSION=1.18.1
 
 LABEL org.label-schema.name="Apache PySpark $SPARK_VERSION" \
       org.label-schema.build-date=$BUILD_DATE \
@@ -21,6 +22,7 @@ RUN apt-get update && \
     conda clean -tipsy && \
     echo "PATH=/opt/miniconda3/bin:\${PATH}" > /etc/profile.d/miniconda.sh && \
     pip install --no-cache pyspark==${SPARK_VERSION} && \
+    pip install --no-cache numpy==${NUMPY_VERSION} && \
     SPARK_HOME=$(python /opt/miniconda3/bin/find_spark_home.py) && \
     echo "export SPARK_HOME=$(python /opt/miniconda3/bin/find_spark_home.py)" > /etc/profile.d/spark.sh && \
     curl -s --url "http://central.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar" --output $SPARK_HOME/jars/aws-java-sdk-1.7.4.jar && \
