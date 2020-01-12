@@ -17,7 +17,7 @@ RUN apt-get update && \
     rm /tmp/miniconda.sh && \
     conda config --set auto_update_conda true && \
     conda config --set channel_priority false && \
-    conda update conda -y --force && \
+    conda update conda -y && \
     conda clean -tipsy && \
     echo "PATH=/opt/miniconda3/bin:\${PATH}" > /etc/profile.d/miniconda.sh && \
     pip install --no-cache pyspark==${SPARK_VERSION} && \
