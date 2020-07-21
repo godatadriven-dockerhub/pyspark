@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  sut:
+    build:
+      context: tests
+      args:
+        IMAGE_NAME: ${IMAGE_NAME}
