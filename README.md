@@ -1,6 +1,6 @@
 # Apache PySpark in Docker
 
-PySpark docker container based on OpenJDK 8 and Miniconda 3
+PySpark docker container based on OpenJDK 8 and OpenJDK 11 and Miniconda 3
 
 [![](https://images.microbadger.com/badges/image/godatadriven/pyspark.svg)](https://microbadger.com/images/godatadriven/pyspark "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/godatadriven/pyspark.svg)](https://microbadger.com/images/godatadriven/pyspark "Get your own version badge on microbadger.com") 
 
