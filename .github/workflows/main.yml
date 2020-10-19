@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  DOCKER_REPO: godatadriven/pyspark
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        DOCKER_TAG: ["3.0.1,3.0,latest", "2.4.5,2.4", "2.3.2,2.3", "2.2.1,2.2", "2.1.2,2.1"]
+
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set current date as env variable
+        run: echo "::set-env name=BUILD_DATE::$(date)"
+        
+      - name: Set spark version based on docker tag
+        run: |
+            DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
+            echo "::set-env name=SPARK_VERSION::${DOCKER_TAG%%,*}"
+
+      - name: Build image
+        run: |
+            DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
+            SPARK_MAJOR_VERSION=${DOCKER_TAG:0:1}
+            if [ ${SPARK_MAJOR_VERSION} = "3" ]; then
+                OPENJDK_VERSION=11
+            else
+                OPENJDK_VERSION=8
+            fi
+
+            docker build --build-arg BUILD_DATE="${BUILD_DATE}" --build-arg SPARK_VERSION="${SPARK_VERSION}" --build-arg OPENJDK_VERSION="${OPENJDK_VERSION}" -t $DOCKER_REPO:${DOCKER_TAG//,/ -t $DOCKER_REPO:} .
+
+      - name: Test image
+        run: |
+            export IMAGE_NAME="$DOCKER_REPO:$SPARK_VERSION"
+            docker-compose --file docker-compose.test.yml build
+            docker-compose --file docker-compose.test.yml run sut
+
+      - name: Push image
+        if: ${{ github.ref == 'ref/head/master' }}
+        env:
+            DOCKERHUB: ${{ secrets.DOCKERHUB }}
+        run: |
+            DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
+            docker login --username nzeilemaker --password ${DOCKERHUB}
+            docker push $DOCKER_REPO:$SPARK_VERSION
