@@ -3,6 +3,7 @@ FROM openjdk:${OPENJDK_VERSION}-jre-slim
 
 ARG BUILD_DATE
 ARG SPARK_VERSION=3.0.0
+ARG SPARK_EXTRAS=
 
 LABEL org.label-schema.name="Apache PySpark $SPARK_VERSION" \
       org.label-schema.build-date=$BUILD_DATE \
@@ -22,7 +23,7 @@ RUN set -ex && \
     conda update conda -y --force-reinstall && \
     conda clean -tipy && \
     echo "PATH=/opt/miniconda3/bin:\${PATH}" > /etc/profile.d/miniconda.sh && \
-    pip install --no-cache pyspark==${SPARK_VERSION} && \
+    pip install --no-cache pyspark[$SPARK_EXTRAS]==${SPARK_VERSION} && \
     SPARK_HOME=$(python /opt/miniconda3/bin/find_spark_home.py) && \
     echo "export SPARK_HOME=$(python /opt/miniconda3/bin/find_spark_home.py)" > /etc/profile.d/spark.sh && \
     curl -s -L --url "https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar" --output $SPARK_HOME/jars/aws-java-sdk-1.7.4.jar && \
