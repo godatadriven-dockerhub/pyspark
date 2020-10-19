@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        DOCKER_TAG: ["3.0.0,3.0,latest", "2.4.5,2.4"]
+        DOCKER_TAG: ["3.0.1,3.0,latest", "2.4.5,2.4", "2.3.2,2.3", "2.2.1,2.2", "2.1.2,2.1"]
 
     timeout-minutes: 30
     steps:
@@ -35,7 +35,14 @@ jobs:
       - name: Build image
         run: |
             DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
-            docker build --build-arg BUILD_DATE="${BUILD_DATE}" --build-arg SPARK_VERSION="${SPARK_VERSION}" -t $DOCKER_REPO:${DOCKER_TAG//,/ -t $DOCKER_REPO:} .
+            SPARK_MAJOR_VERSION=${DOCKER_TAG:0:1}
+            if [ ${SPARK_MAJOR_VERSION} = "3" ]; then
+                OPENJDK_VERSION=11
+            else
+                OPENJDK_VERSION=8
+            fi
+
+            docker build --build-arg BUILD_DATE="${BUILD_DATE}" --build-arg SPARK_VERSION="${SPARK_VERSION}" --build-arg OPENJDK_VERSION="${OPENJDK_VERSION}" -t $DOCKER_REPO:${DOCKER_TAG//,/ -t $DOCKER_REPO:} .
 
       - name: Test image
         run: |
@@ -44,7 +51,7 @@ jobs:
             docker-compose --file docker-compose.test.yml run sut
 
       - name: Push image
-        if: {{ github.ref == 'ref/head/master' }}
+        if: ${{ github.ref == 'ref/head/master' }}
         env:
             DOCKERHUB: ${{ secrets.DOCKERHUB }}
         run: |
