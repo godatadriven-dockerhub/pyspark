@@ -45,11 +45,12 @@ jobs:
             echo ::set-output name=tags::${TAGS}
             echo ::set-output name=build_args::${BUILD_ARGS}
             echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-
+            
       - name: Run Hadolint
         uses: reviewdog/action-hadolint@v1
         with:
           github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
 
       - name: Build image
         uses: docker/build-push-action@v2
