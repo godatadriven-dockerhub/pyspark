@@ -81,3 +81,10 @@ jobs:
             IMAGE_NAME: ${{ steps.prep.outputs.image_name }}
         run: |
             docker push $IMAGE_NAME
+
+      - name: Update MicroBadger
+        if: github.ref == 'refs/heads/master'
+        env:
+            MICROBADGER: ${{ secrets.MICROBADGER }}            
+        run: |
+            curl -X POST $MICROBADGER
