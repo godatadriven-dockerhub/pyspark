@@ -24,37 +24,60 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set current date as env variable
-        run: echo "::set-env name=BUILD_DATE::$(date)"
-        
-      - name: Set spark version based on docker tag
+      - name: Prepare
+        id: prep
         run: |
             DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
-            echo "::set-env name=SPARK_VERSION::${DOCKER_TAG%%,*}"
-
-      - name: Build image
-        run: |
-            DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
+            
             SPARK_MAJOR_VERSION=${DOCKER_TAG:0:1}
             if [ ${SPARK_MAJOR_VERSION} = "3" ]; then
                 OPENJDK_VERSION=11
             else
                 OPENJDK_VERSION=8
             fi
+            
+            DOCKER_IMAGE_NAME="$DOCKER_REPO:${DOCKER_TAG%%,*}"
+            echo "::set-env name=image_name::${DOCKER_IMAGE_NAME}"
+            
+            TAGS="$DOCKER_REPO:${DOCKER_TAG//,/,$DOCKER_REPO:}"
+            BUILD_ARGS="SPARK_VERSION=${DOCKER_TAG%%,*},OPENJDK_VERSION=${OPENJDK_VERSION}
+            
+            echo ::set-output name=tags::${TAGS}
+            echo ::set-output name=build_args::${BUILD_ARGS}
+            echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-            docker build --build-arg BUILD_DATE="${BUILD_DATE}" --build-arg SPARK_VERSION="${SPARK_VERSION}" --build-arg OPENJDK_VERSION="${OPENJDK_VERSION}" -t $DOCKER_REPO:${DOCKER_TAG//,/ -t $DOCKER_REPO:} .
+      - name: Build image
+        uses: docker/build-push-action@v2
+        with:
+         context: .
+         file: ./Dockerfile
+         push: false
+         tags: ${{ steps.prep.outputs.tags }}
+         build-args: ${{ steps.prep.outputs.build_args }}
+         labels: |
+           org.opencontainers.image.source=${{ github.event.repository.clone_url }}
+           org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+           org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Test image
+        env:
+            IMAGE_NAME: ${{ steps.prep.outputs.image_name }}
         run: |
-            export IMAGE_NAME="$DOCKER_REPO:$SPARK_VERSION"
-            docker-compose --file docker-compose.test.yml build
-            docker-compose --file docker-compose.test.yml run sut
+            if [[ -f "docker-compose.test.yml" ]]; then
+                docker-compose --file docker-compose.test.yml build
+                docker-compose --file docker-compose.test.yml run sut
+            fi
+
+      - name: Login to DockerHub
+        if: github.ref == 'ref/head/master'
+        uses: docker/login-action@v1 
+        with:
+          username: nzeilemaker
+          password: ${{ secrets.DOCKERHUB }}
 
       - name: Push image
-        if: ${{ github.ref == 'ref/head/master' }}
+        if: github.ref == 'ref/head/master'
         env:
-            DOCKERHUB: ${{ secrets.DOCKERHUB }}
+            IMAGE_NAME: ${{ steps.prep.outputs.image_name }}
         run: |
-            DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
-            docker login --username nzeilemaker --password ${DOCKERHUB}
-            docker push $DOCKER_REPO:$SPARK_VERSION
+            docker push $IMAGE_NAME

@@ -1,13 +1,11 @@
 ARG OPENJDK_VERSION=8
 FROM openjdk:${OPENJDK_VERSION}-jre-slim
 
-ARG BUILD_DATE
 ARG SPARK_VERSION=3.0.0
 ARG SPARK_EXTRAS=
 
-LABEL org.label-schema.name="Apache PySpark $SPARK_VERSION" \
-      org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.version=$SPARK_VERSION
+LABEL org.opencontainers.image.title="Apache PySpark $SPARK_VERSION" \
+      org.opencontainers.image.version=$SPARK_VERSION
 
 ENV PATH="/opt/miniconda3/bin:${PATH}"
 ENV PYSPARK_PYTHON="/opt/miniconda3/bin/python"
