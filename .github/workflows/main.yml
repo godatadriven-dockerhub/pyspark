@@ -77,10 +77,8 @@ jobs:
 
       - name: Push image
         if: github.ref == 'refs/heads/master'
-        env:
-            IMAGE_NAME: ${{ steps.prep.outputs.image_name }}
         run: |
-            docker push $IMAGE_NAME
+            docker push $DOCKER_REPO
 
       - name: Update MicroBadger
         if: github.ref == 'refs/heads/master'
