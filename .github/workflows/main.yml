@@ -55,8 +55,8 @@ jobs:
          push: false
          tags: ${{ steps.prep.outputs.tags }}
          build-args: |
-           OPENJDK_VERSION=${{ steps.prep.outputs.spark_version }}
-           SPARK_VERSION=${{ steps.prep.outputs.openjdk_version }}
+           OPENJDK_VERSION=${{ steps.prep.outputs.openjdk_version }}
+           SPARK_VERSION=${{ steps.prep.outputs.spark_version }}
          labels: |
            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
