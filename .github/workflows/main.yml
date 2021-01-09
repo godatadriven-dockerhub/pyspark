@@ -82,10 +82,3 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
             docker push $DOCKER_REPO
-
-      - name: Update MicroBadger
-        if: github.ref == 'refs/heads/master'
-        env:
-            MICROBADGER: ${{ secrets.MICROBADGER }}            
-        run: |
-            curl -X POST $MICROBADGER
