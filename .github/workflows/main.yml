@@ -40,10 +40,11 @@ jobs:
             echo ::set-output name=image_name::${DOCKER_IMAGE_NAME}
             
             TAGS="$DOCKER_REPO:${DOCKER_TAG//,/,$DOCKER_REPO:}"
-            BUILD_ARGS="SPARK_VERSION=${DOCKER_TAG%%,*},OPENJDK_VERSION=${OPENJDK_VERSION}"
-            
             echo ::set-output name=tags::${TAGS}
-            echo ::set-output name=build_args::${BUILD_ARGS}
+
+            echo ::set-output name=spark_version::${DOCKER_TAG%%,*}
+            echo ::set-output name=openjdk_version::${OPENJDK_VERSION}
+            
             echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
       - name: Build image
@@ -53,36 +54,38 @@ jobs:
          file: ./Dockerfile
          push: false
          tags: ${{ steps.prep.outputs.tags }}
-         build-args: ${{ steps.prep.outputs.build_args }}
+         build-args: |
+           OPENJDK_VERSION=${{ steps.prep.outputs.spark_version }}
+           SPARK_VERSION=${{ steps.prep.outputs.openjdk_version }}
          labels: |
            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
            org.opencontainers.image.revision=${{ github.sha }}
 
-      # - name: Test image
-      #   env:
-      #       IMAGE_NAME: ${{ steps.prep.outputs.image_name }}
-      #   run: |
-      #       if [[ -f "docker-compose.test.yml" ]]; then
-      #           docker-compose --file docker-compose.test.yml build
-      #           docker-compose --file docker-compose.test.yml run sut
-      #       fi
+      - name: Test image
+        env:
+            IMAGE_NAME: ${{ steps.prep.outputs.image_name }}
+        run: |
+            if [[ -f "docker-compose.test.yml" ]]; then
+                docker-compose --file docker-compose.test.yml build
+                docker-compose --file docker-compose.test.yml run sut
+            fi
 
-      # - name: Login to DockerHub
-      #   if: github.ref == 'refs/heads/master'
-      #   uses: docker/login-action@v1 
-      #   with:
-      #     username: nzeilemaker
-      #     password: ${{ secrets.DOCKERHUB }}
+      - name: Login to DockerHub
+        if: github.ref == 'refs/heads/master'
+        uses: docker/login-action@v1 
+        with:
+          username: nzeilemaker
+          password: ${{ secrets.DOCKERHUB }}
 
-      # - name: Push image
-      #   if: github.ref == 'refs/heads/master'
-      #   run: |
-      #       docker push $DOCKER_REPO
+      - name: Push image
+        if: github.ref == 'refs/heads/master'
+        run: |
+            docker push $DOCKER_REPO
 
-      # - name: Update MicroBadger
-      #   if: github.ref == 'refs/heads/master'
-      #   env:
-      #       MICROBADGER: ${{ secrets.MICROBADGER }}            
-      #   run: |
-      #       curl -X POST $MICROBADGER
+      - name: Update MicroBadger
+        if: github.ref == 'refs/heads/master'
+        env:
+            MICROBADGER: ${{ secrets.MICROBADGER }}            
+        run: |
+            curl -X POST $MICROBADGER
