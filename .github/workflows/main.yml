@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - master
+  schedule:
+    # Triggers every week on tuesday night
+    - cron:  '0 0 * * 2'
 
 env:
   DOCKER_REPO: godatadriven/pyspark
@@ -75,10 +78,19 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: docker/login-action@v1 
         with:
-          username: nzeilemaker
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB }}
 
       - name: Push image
         if: github.ref == 'refs/heads/master'
         run: |
             docker push $DOCKER_REPO
+
+      - name: Report Status
+        if: always() && github.ref == 'refs/heads/master'
+        uses: ravsamhq/notify-slack-action@master
+        with:
+          status: ${{ job.status }}
+          notify_when: 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_GDD_GENERAL_WEBHOOK }}
