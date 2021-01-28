@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - master
+  schedule:
+    # Triggers every week on tuesday night
+    - cron:  '0 0 * * 2'
 
 env:
   DOCKER_REPO: godatadriven/pyspark
@@ -24,8 +27,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Prepare
-        id: prep
+      - name: Parse args
+        id: args
         run: |
             DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
             
@@ -36,15 +39,25 @@ jobs:
                 OPENJDK_VERSION=8
             fi
             
+            BUILD_ARGS="OPENJDK_VERSION=${OPENJDK_VERSION}
+                        SPARK_VERSION=${DOCKER_TAG%%,*}"
+
+            BUILD_ARGS="${BUILD_ARGS//'%'/'%25'}"
+            BUILD_ARGS="${BUILD_ARGS//$'\n'/'%0A'}"
+            BUILD_ARGS="${BUILD_ARGS//$'\r'/'%0D'}"
+
+            echo "::set-output name=build_args::$BUILD_ARGS"
+
+      - name: Prepare
+        id: prep
+        run: |
+            DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
             DOCKER_IMAGE_NAME="$DOCKER_REPO:${DOCKER_TAG%%,*}"
             echo ::set-output name=image_name::${DOCKER_IMAGE_NAME}
             
             TAGS="$DOCKER_REPO:${DOCKER_TAG//,/,$DOCKER_REPO:}"
             echo ::set-output name=tags::${TAGS}
 
-            echo ::set-output name=spark_version::${DOCKER_TAG%%,*}
-            echo ::set-output name=openjdk_version::${OPENJDK_VERSION}
-            
             echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
       - name: Build image
@@ -55,8 +68,7 @@ jobs:
          push: false
          tags: ${{ steps.prep.outputs.tags }}
          build-args: |
-           OPENJDK_VERSION=${{ steps.prep.outputs.openjdk_version }}
-           SPARK_VERSION=${{ steps.prep.outputs.spark_version }}
+           ${{ steps.args.outputs.build_args }}
          labels: |
            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
@@ -75,10 +87,19 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: docker/login-action@v1 
         with:
-          username: nzeilemaker
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB }}
 
       - name: Push image
         if: github.ref == 'refs/heads/master'
         run: |
             docker push $DOCKER_REPO
+
+      - name: Report Status
+        if: always() && github.ref == 'refs/heads/master'
+        uses: ravsamhq/notify-slack-action@master
+        with:
+          status: ${{ job.status }}
+          notify_when: 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_GDD_GENERAL_WEBHOOK }}
