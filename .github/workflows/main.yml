@@ -93,7 +93,7 @@ jobs:
       - name: Push image
         if: github.ref == 'refs/heads/master'
         run: |
-            docker push $DOCKER_REPO
+            docker push --all-tags $DOCKER_REPO
 
       - name: Report Status
         if: always() && github.ref == 'refs/heads/master'
