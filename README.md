@@ -3,7 +3,7 @@
 PySpark docker container based on OpenJDK and Miniconda 3.
 PySpark 3+ uses OpenJDK 11, PySpark 2 uses OpenJDK 8.
 
-[![](https://images.microbadger.com/badges/image/godatadriven/pyspark.svg)](https://microbadger.com/images/godatadriven/pyspark "Get your own image badge on microbadger.com") [![](https://images.microbadger.com/badges/version/godatadriven/pyspark.svg)](https://microbadger.com/images/godatadriven/pyspark "Get your own version badge on microbadger.com") 
+[![](https://img.shields.io/docker/image-size/godatadriven/pyspark/latest)](https://hub.docker.com/r/godatadriven/pyspark) [![](https://img.shields.io/docker/v/godatadriven/pyspark?sort=semver)](https://hub.docker.com/r/godatadriven/pyspark) 
 
 ## Running the container
 By default spark-submit --help is run:
