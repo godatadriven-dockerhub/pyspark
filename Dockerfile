@@ -19,6 +19,7 @@ RUN set -ex && \
     conda config --set auto_update_conda true && \
     conda config --set channel_priority false && \
     conda update conda -y --force-reinstall && \
+    conda install pip && \
     conda clean -tipy && \
     echo "PATH=/opt/miniconda3/bin:\${PATH}" > /etc/profile.d/miniconda.sh && \
     pip install --no-cache pyspark[$SPARK_EXTRAS]==${SPARK_VERSION} && \
