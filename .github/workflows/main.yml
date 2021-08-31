@@ -32,6 +32,7 @@ jobs:
         id: args
         run: |
             DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
+            DEBIAN_RELEASE="${{ matrix.DEBIAN_RELEASE }}"
             
             SPARK_MAJOR_VERSION=${DOCKER_TAG:0:1}
             if [ ${SPARK_MAJOR_VERSION} = "3" ]; then
@@ -54,7 +55,8 @@ jobs:
         id: prep
         run: |
             DOCKER_TAG="${{ matrix.DOCKER_TAG }}"
-            DOCKER_IMAGE_NAME="$DOCKER_REPO:${DOCKER_TAG%%,*}"
+            DEBIAN_RELEASE="${{ matrix.DEBIAN_RELEASE }}"
+            DOCKER_IMAGE_NAME="$DOCKER_REPO:${DOCKER_TAG%%,*}$DEBIAN_RELEASE"
             echo ::set-output name=image_name::${DOCKER_IMAGE_NAME}
             
             TAGS="$DOCKER_REPO:${DOCKER_TAG//,/$DEBIAN_RELEASE,$DOCKER_REPO:}$DEBIAN_RELEASE"
