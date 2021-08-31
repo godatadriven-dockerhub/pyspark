@@ -21,6 +21,7 @@ jobs:
     strategy:
       matrix:
         DOCKER_TAG: ["3.1.2,3.1,latest","3.0.2,3.0", "2.4.5,2.4"]
+        DEBIAN_RELEASE: ["", "-buster"]
 
     timeout-minutes: 30
     steps:
@@ -40,7 +41,8 @@ jobs:
             fi
             
             BUILD_ARGS="OPENJDK_VERSION=${OPENJDK_VERSION}
-                        SPARK_VERSION=${DOCKER_TAG%%,*}"
+                        SPARK_VERSION=${DOCKER_TAG%%,*}
+                        DEBIAN_RELEASE=${DEBIAN_RELEASE}"
 
             BUILD_ARGS="${BUILD_ARGS//'%'/'%25'}"
             BUILD_ARGS="${BUILD_ARGS//$'\n'/'%0A'}"
@@ -55,7 +57,7 @@ jobs:
             DOCKER_IMAGE_NAME="$DOCKER_REPO:${DOCKER_TAG%%,*}"
             echo ::set-output name=image_name::${DOCKER_IMAGE_NAME}
             
-            TAGS="$DOCKER_REPO:${DOCKER_TAG//,/,$DOCKER_REPO:}"
+            TAGS="$DOCKER_REPO:${DOCKER_TAG//,/$DEBIAN_RELEASE,$DOCKER_REPO:}$DEBIAN_RELEASE"
             echo ::set-output name=tags::${TAGS}
 
             echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
