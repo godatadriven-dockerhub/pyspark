@@ -108,6 +108,8 @@ jobs:
          context: .
          file: ./Dockerfile
          push: true
+         provenance: false
+         sbom: false
          tags: ${{ steps.prep.outputs.tags }}
          build-args: |
            ${{ steps.args.outputs.build_args }}
@@ -115,7 +117,7 @@ jobs:
            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
            org.opencontainers.image.revision=${{ github.sha }}
-         platforms: linux/amd64,linux/arm/v8,linux/arm64
+         platforms: linux/amd64,linux/arm64
 
       - name: Report Status
         if: always() && github.ref == 'refs/heads/master'
