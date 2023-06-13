@@ -1,7 +1,9 @@
 ARG OPENJDK_VERSION=8
 ARG DEBIAN_RELEASE=""
 FROM openjdk:${OPENJDK_VERSION}-jre-slim${DEBIAN_RELEASE}
-
+ARG TARGETPLATFORM
+ARG TARGETARCH
+ARG TARGETVARIANT
 ARG SPARK_VERSION=3.0.0
 ARG SPARK_EXTRAS=
 
@@ -14,7 +16,7 @@ ENV PYSPARK_PYTHON="/opt/miniconda3/bin/python"
 RUN set -ex && \
 	apt-get update && \
     apt-get install -y curl bzip2 --no-install-recommends && \
-    curl -s -L --url "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh" --output /tmp/miniconda.sh && \
+    if [ "${TARGETARCH}" = "arm64" ]; then curl -s -L --url "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-aarch64.sh" --output /tmp/miniconda.sh; else curl -s -L --url "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh" --output /tmp/miniconda.sh; fi && \
     bash /tmp/miniconda.sh -b -f -p "/opt/miniconda3" && \
     rm /tmp/miniconda.sh && \
     conda config --set auto_update_conda true && \
