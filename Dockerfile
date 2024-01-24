@@ -14,7 +14,7 @@ ENV PATH="/opt/miniconda3/bin:${PATH}"
 ENV PYSPARK_PYTHON="/opt/miniconda3/bin/python"
 
 RUN set -ex && \
-	apt-get update && \
+    apt-get update && \
     apt-get install -y curl bzip2 --no-install-recommends && \
     if [ "${TARGETARCH}" = "arm64" ]; then curl -s -L --url "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-aarch64.sh" --output /tmp/miniconda.sh; else curl -s -L --url "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh" --output /tmp/miniconda.sh; fi && \
     bash /tmp/miniconda.sh -b -f -p "/opt/miniconda3" && \
@@ -35,7 +35,8 @@ RUN set -ex && \
     echo "spark.hadoop.fs.s3.impl=org.apache.hadoop.fs.s3a.S3AFileSystem" >> $SPARK_HOME/conf/spark-defaults.conf && \
     apt-get remove -y curl bzip2 && \
     apt-get autoremove -y && \
-    apt-get clean
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["spark-submit"]
 CMD ["--help"]
